@@ -1,0 +1,110 @@
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: projects/02/ALU.hdl
+
+/**
+ * The ALU (Arithmetic Logic Unit).
+ * Computes one of the following functions:
+ * x+y, x-y, y-x, 0, 1, -1, x, y, -x, -y, !x, !y,
+ * x+1, y+1, x-1, y-1, x&y, x|y on two 16-bit inputs, 
+ * according to 6 input bits denoted zx,nx,zy,ny,f,no.
+ * In addition, the ALU computes two 1-bit outputs:
+ * if the ALU output == 0, zr is set to 1; otherwise zr is set to 0;
+ * if the ALU output < 0, ng is set to 1; otherwise ng is set to 0.
+ */
+
+// Implementation: the ALU logic manipulates the x and y inputs
+// and operates on the resulting values, as follows:
+// if (zx == 1) set x = 0        // 16-bit constant
+// if (nx == 1) set x = !x       // bitwise not
+// if (zy == 1) set y = 0        // 16-bit constant
+// if (ny == 1) set y = !y       // bitwise not
+// if (f == 1)  set out = x + y  // integer 2's complement addition
+// if (f == 0)  set out = x & y  // bitwise and
+// if (no == 1) set out = !out   // bitwise not
+// if (out == 0) set zr = 1
+// if (out < 0) set ng = 1
+
+CHIP ALU {
+    IN  
+        x[16], y[16],  // 16-bit inputs        
+        zx, // zero the x input?
+        nx, // negate the x input?
+        zy, // zero the y input?
+        ny, // negate the y input?
+        f,  // compute out = x + y (if 1) or x & y (if 0)
+        no; // negate the out output?
+
+    OUT 
+        out[16], // 16-bit output
+        zr, // 1 if (out == 0), 0 otherwise
+        ng; // 1 if (out < 0),  0 otherwise
+
+    PARTS:
+   // Put you code here:
+	//Zero X?
+	Not(in=zx,out=X1);
+	And16(a[0..15]=x[0..15],b[0]=X1,b[1]=X1,b[2]=X1,b[3]=X1,b[4]=X1,b[5]=X1,b[6]=X1,b[7]=X1,b[8]=X1,b[9]=X1,b[10]=X1,b[11]=X1,b[12]=X1,b[13]=X1,b[14]=X1,b[15]=X1,out[0..15]=ZXOut);
+	
+	//Negate X?
+	Not16(in[0..15]=ZXOut,out[0..15]=nota);
+	Not16(in[0]=nx,in[1]=nx,in[2]=nx,in[3]=nx,in[4]=nx,in[5]=nx,in[6]=nx,in[7]=nx,in[8]=nx,in[9]=nx,in[10]=nx,in[11]=nx,in[12]=nx,in[13]=nx,in[14]=nx,in[15]=nx,out[0..15]=notb);
+	And16(a[0..15]=ZXOut ,b[0..15]=notb ,out[0..15]=And16x);
+	And16(a[0]=nx,a[1]=nx,a[2]=nx,a[3]=nx,a[4]=nx,a[5]=nx,a[6]=nx,a[7]=nx,a[8]=nx,a[9]=nx,a[10]=nx,a[11]=nx,a[12]=nx,a[13]=nx,a[14]=nx,a[15]=nx,b[0..15]=nota ,out[0..15]=And16y );
+	Or16(a[0..15]=And16x ,b[0..15]=And16y ,out[0..15]= NXOut);
+
+	//Zero Y?
+	Not(in=zy,out=Y1);
+	And16(a[0..15]=y[0..15],b[0]=Y1,b[1]=Y1,b[2]=Y1,b[3]=Y1,b[4]=Y1,b[5]=Y1,b[6]=Y1,b[7]=Y1,b[8]=Y1,b[9]=Y1,b[10]=Y1,b[11]=Y1,b[12]=Y1,b[13]=Y1,b[14]=Y1,b[15]=Y1,out[0..15]=ZYOut);
+	
+	//Negate Y?
+	Not16(in[0..15]=ZYOut,out[0..15]=nota2);
+	Not16(in[0]=ny,in[1]=ny,in[2]=ny,in[3]=ny,in[4]=ny,in[5]=ny,in[6]=ny,in[7]=ny,in[8]=ny,in[9]=ny,in[10]=ny,in[11]=ny,in[12]=ny,in[13]=ny,in[14]=ny,in[15]=ny,out[0..15]=notb2);
+	And16(a[0..15]=ZYOut ,b[0..15]=notb2 ,out[0..15]=And16x2);
+	And16(a[0]=ny,a[1]=ny,a[2]=ny,a[3]=ny,a[4]=ny,a[5]=ny,a[6]=ny,a[7]=ny,a[8]=ny,a[9]=ny,a[10]=ny,a[11]=ny,a[12]=ny,a[13]=ny,a[14]=ny,a[15]=ny,b[0..15]=nota2 ,out[0..15]=And16y2);
+	Or16(a[0..15]=And16x2 ,b[0..15]=And16y2 ,out[0..15]= NYOut);
+
+	//f
+
+	//compute x + y
+	Add16(a=NXOut,b=NYOut,out=Add16out);
+
+	//compute x & y
+	And16(a=NXOut,b=NYOut,out=And16out);
+
+	//Mux16
+	Mux16(a=And16out,b=Add16out,sel=f,out=fout);
+
+	//negate output?
+	Not16(in=fout, out=not3);
+   	Not16(in[0]=no,in[1]=no,in[2]=no,in[3]=no,in[4]=no,in[5]=no,in[6]=no,in[7]=no,in[8]=no,in[9]=no,in[10]=no,in[11]=no,in[12]=no,in[13]=no,in[14]=no,in[15]=no, out=not4);
+   	And16(a=fout, b=not4, out=x3);
+   	And16(a=not3, b[0]=no,b[1]=no,b[2]=no,b[3]=no,b[4]=no,b[5]=no,b[6]=no,b[7]=no,b[8]=no,b[9]=no,b[10]=no,b[11]=no,b[12]=no,b[13]=no,b[14]=no,b[15]=no, out=y3);
+   	Or16(a=x3, b=y3, out[0]=dummy0, out[1]=dummy1, out[2]=dummy2, out[3]=dummy3, out[4]=dummy4, out[5]=dummy5, out[6]=dummy6, out[7]=dummy7, out[8]=dummy8, out[9]=dummy9, out[10]=dummy10, out[11]=dummy11, out[12]=dummy12, out[13]=dummy13, out[14]=dummy14, out[15]=dummy15, out=out);
+
+	/Zero?
+	/Sweet16
+	Or(a=dummy0 , b=dummy1 , out= duddyA);
+	Or(a=dummy2 , b=dummy3 , out= duddyB);
+	Or(a=dummy4 , b=dummy5 , out= duddyC);
+	Or(a=dummy6 , b=dummy7 , out= duddyD);
+	Or(a=dummy8 , b=dummy9 , out= duddyE);
+	Or(a=dummy10 , b=dummy11 , out= duddyF);
+	Or(a=dummy12 , b=dummy13 , out= duddyG);
+	Or(a=dummy14 , b=dummy15 , out= duddyH);
+	/Elite 8
+	Or(a=duddyA , b=duddyB , out= cluddy1);
+	Or(a=duddyC , b=duddyD , out= cluddy2);
+	Or(a=duddyE , b=duddyF , out= cluddy3);
+	Or(a=duddyG , b=duddyH , out= cluddy4);
+	/Final Four
+	Or(a=cluddy1 , b=cluddy2 , out= cluddyA);
+	Or(a=cluddy3 , b=cluddy4 , out= cluddyB);
+	/Championship
+	Or(a=cluddyA , b=cluddyB , out= zr1);
+	Not(in=zr1,out=zr);
+
+	/Negative?
+	And(a=dummy15, b=true, out=ng);
+}
