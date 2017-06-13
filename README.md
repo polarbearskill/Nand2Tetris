@@ -1,1 +1,1 @@
-# Nand2Tetris
+My code as I go through the Nand to Tetris course: http://www.nand2tetris.org/
