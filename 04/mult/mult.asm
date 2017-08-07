@@ -11,19 +11,19 @@
 // Adds 1+...+100.
 @i // i refers to some mem. location.
 M=1 // i=1
-@R3 // R3refers to some mem. location.
-M=0 // R3=0
+@R2 // R2 refers to some mem. location.
+M=0 // R2=0
 (LOOP)
 @i
 D=M // D=i
-@R1
-D=D-A // D=i-R1
+@R0
+D=D-M // D=i-R0
 @END
-D;JGT // If (i-R1)>0 goto END
-@i
-D=M // D=i
-@R3
-M=D+M // R3=R3+R2
+D;JGT // If (i-R0)>0 goto END
+@R1
+D=M // D=R1
+@R2
+M=D+M // R2=R2+R1
 @i
 M=M+1 // i=i+1
 @LOOP
