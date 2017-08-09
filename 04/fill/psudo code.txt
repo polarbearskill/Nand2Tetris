@@ -1,0 +1,6 @@
+Do
+	If Check RAM[24576] <> 0
+		RAM[16384]-RAM[24575] = 1
+	Else If
+		RAM[16384]-RAM[24575] = 0
+End Loop

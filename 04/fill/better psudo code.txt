@@ -1,0 +1,13 @@
+Goto 10
+[2]
+RAM[16384]-RAM[24575] = 1
+Goto 10
+[4]
+RAM[16384]-RAM[24575] = 0
+Goto 10
+[10]
+If RAM[24576] <> 0
+	Goto 2
+If RAM[24576] = 0
+	Goto 4
+Goto 10
