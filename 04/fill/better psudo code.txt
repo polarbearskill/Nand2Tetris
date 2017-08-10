@@ -10,4 +10,3 @@ If RAM[24576] <> 0
 	Goto 2
 If RAM[24576] = 0
 	Goto 4
-Goto 10
