@@ -9,7 +9,7 @@
  * else out does not change
  */
 
-CHIP Register {
+CHIP RegisterA {
     IN in[16], load;
     OUT out[16];
 
