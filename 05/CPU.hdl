@@ -47,6 +47,7 @@ CHIP CPU {
     Mux16(a=instruction,b=ALUOut,sel=CCode,out=FirstMuxOut);
 
     //A Register
+    //And(a=ACode,b=instruction[5],out=LoadA);
     ARegister(in=FirstMuxOut,load=ACode,out=RegAOut);
     And16(a=RegAOut,b=true,out[0]=addressM[0],out[1]=addressM[1],out[2]=addressM[2],out[3]=addressM[3],out[4]=addressM[4],out[5]=addressM[5],out[6]=addressM[6],out[7]=addressM[7],out[8]=addressM[8],out[9]=addressM[9],out[10]=addressM[10],out[11]=addressM[11],out[12]=addressM[12],out[13]=addressM[13],out[14]=addressM[14],out[15]=dummy);    
 
@@ -57,17 +58,21 @@ CHIP CPU {
     ALU(x=RegDOut,y=SecondMuxOut,zx=instruction[11],nx=instruction[10],zy=instruction[9],ny=instruction[8],f=instruction[7],no=instruction[6],out=ALUOut,out=outM,zr=zr,ng=ng);
 
     //D Register
-    DRegister(in=ALUOut,load=CCode,out=RegDOut);     
+    And(a=CCode,b=instruction[4],out=LoadD);
+    DRegister(in=ALUOut,load=LoadD,out=RegDOut);     
     
     //Calculate Jump
     Or(a=ng,b=zr,out=OrOut);
     Not(in=OrOut,out=NorOut);
+    
     And(a=instruction[2],b=ng,out=z1);
     And(a=instruction[1],b=zr,out=z2);
     And(a=instruction[0],b=NorOut,out=z3);
-    And(a=z1,b=z2,out=z4);
-    And(a=z3,b=z4,out=z5);
-    Not(in=z5,out=z6);
+    Or(a=z1,b=z2,out=z4);
+    Or(a=z3,b=z4,out=z5);
+    And(a=z5,b=CCode,out=z7);
+    Not(in=z7,out=z6);
+
 
     //Program Counter
     PC(in=RegAOut,load=z5,inc=z6,reset=reset,out[0..14]=pc);
